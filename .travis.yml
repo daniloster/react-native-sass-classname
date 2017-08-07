@@ -1,0 +1,23 @@
+language: node_js
+node_js:
+- '8.0'
+- '6.3'
+- '5.1'
+- '5.0'
+cache:
+  yarn: true
+  directories:
+  - node_modules
+deploy:
+  provider: npm
+  email: daniloster@gmail.com
+  on:
+    branch: master
+  skip_cleanup: true
+  api_key:
+    secure: erPvwF8eVE7JUjQ9Bt+c0Mr/GzxUIy6h/g/QFqSZ4mtVyTdDRHf4asMfhppdgAB1pwu3ZeNVAirHKO8YJBrZSkh670VMdsoG+5qKFaTvZ9tgT3UBEbkyO6hhd7W8OHRTuLrYY3uEgTr4RVOduzvZ4S9a2TKPLzXurohyf2zpyFHxmPzFjtq0sdMaSo3ArErYGWMwNPkVhd73n2jF9dOQAqB3+IRT6wzuQlAPh4VHgTfm6MozT+PaxfFZEWzWNj61+u+wdPOoaopAh115KevhWM6cOVdfI/ylqzmb8CLL/UH0Yjcpf/0nPx/rxWDGUlJCovjjG2M3ytZsUgVKkzcSof+TyZTqAwJhbGw+RcU4a8gpSpvzh5B6xnSHWdFqKgPjaL8LhALOnRqh61uiipYoLzuRz3EAtuyGWWok+IA4tez22EbOEeZcNEBIdeOS7JSfeZro1o3S7KN3IzHB7IMQXM7NdyN8CGxkTFg7FexvcsnMoZSnxgotkt1bGwGBPwIsEg2BXrMgA3qLCuKlx0R+fWObaEJrFnRSA7KvI0qv+XEQlb9vYgi8gDXYkOdR+qHm3yDyVlKThHG6uc/ZWB6LIVXjXVXRG+ZSQkDHerwYJYOa5gkmx+J2xAesFt5CC88yo6P8Mgk4uEXMIe333Jn8J1bTjSug/ymuf1dYh0wHxco=
+after_deploy:
+- rm .npmrc
+branches:
+  only:
+  - master

@@ -1,0 +1,31 @@
+{
+  "name": "babel-plugin-react-native-sass-classname",
+  "version": "0.0.1",
+  "description": "Babel plugin to make react web app more reusable as react-native apps taking the scss file with pre-extesions",
+  "main": "index.js",
+  "dependencies": {
+    "react-native-css": "2.0.5"
+  },
+  "scripts": {
+    "test": "echo \"No test implemented\" && exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daniloster/react-native-sass-classname.git"
+  },
+  "keywords": [
+    "sass",
+    "scss",
+    "react",
+    "react-native",
+    "classname",
+    "styling",
+    "style"
+  ],
+  "author": "daniloster",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/daniloster/react-native-sass-classname/issues"
+  },
+  "homepage": "https://github.com/daniloster/react-native-sass-classname#readme"
+}

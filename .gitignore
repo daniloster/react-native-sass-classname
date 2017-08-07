@@ -1,3 +1,8 @@
+# Custom patterns
+.DS_Store
+.vscode/
+.npmrc
+
 # Logs
 logs
 *.log
