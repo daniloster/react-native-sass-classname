@@ -54,7 +54,7 @@ import {
   View
 } from 'react-native'; // of course, you will need to map your module resolver to grab your own polyfills (custom Text and View)
 
-import styles from './SplashScreen.scss';
+import styles from './Application.scss';
 
 const Application = (() => (
   <View
