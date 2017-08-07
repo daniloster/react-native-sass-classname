@@ -3,7 +3,7 @@ var sass = require('node-sass');
 var reactNativeCSS = require('react-native-css').default;
 var fs = require('fs');
 
-const polyfillMerge = `
+var polyfillMerge = `
 Array.$mergeItems = function $mergeItems(merged, item) {
   return Object.assign(merged, item);
 };
@@ -13,13 +13,13 @@ Array.prototype.$merge = Array.prototype.$merge || function $merge() {
 };
 `;
 
-const cache = {
+var cache = {
   isMergePolyfilled: false,
 };
 
 function importContent(filePath) {
   if (!cache[filePath]) {
-    const data = fs.readFileSync(filePath).toString('utf-8');
+    var data = fs.readFileSync(filePath).toString('utf-8');
     cache[filePath] = {
       rawData: data,
       compiled: reactNativeCSS(data),
@@ -29,13 +29,13 @@ function importContent(filePath) {
   return cache[filePath];
 }
 
-const DIRECTORY_SEPARATOR = '/';
-const EXTENSION_SEPARATOR = '.';
-const NATIVE_PREFIX_EXTENSION = 'native';
+var DIRECTORY_SEPARATOR = '/';
+var EXTENSION_SEPARATOR = '.';
+var NATIVE_PREFIX_EXTENSION = 'native';
 
 
 function isValidSourceFile(filePath, extensions) {
-  const extension = filePath.split(EXTENSION_SEPARATOR).pop().toLowerCase();
+  var extension = filePath.split(EXTENSION_SEPARATOR).pop().toLowerCase();
   return extensions.filter(function (ext) {
     return extension === ext;
   }).length > 0;
@@ -47,10 +47,10 @@ function isValidSourceFile(filePath, extensions) {
  * @param {array<string>} extensions
  */
 function parsePath(filePath, nativeExtensionPrefix, extensions) {
-  const path = filePath.split(EXTENSION_SEPARATOR);
+  var path = filePath.split(EXTENSION_SEPARATOR);
   path.pop();
-  const fullPathWithoutExtension = path.join(EXTENSION_SEPARATOR);
-  const extension = extensions.filter(function (ext) {
+  var fullPathWithoutExtension = path.join(EXTENSION_SEPARATOR);
+  var extension = extensions.filter(function (ext) {
     return fs.existsSync([
       fullPathWithoutExtension,
       EXTENSION_SEPARATOR,
@@ -74,10 +74,10 @@ function parsePath(filePath, nativeExtensionPrefix, extensions) {
  * @param {string} target - style file name
  */
 function getCssFilePath(source, target) {
-  const pathFileNodes = source.split(DIRECTORY_SEPARATOR);
+  var pathFileNodes = source.split(DIRECTORY_SEPARATOR);
   pathFileNodes.pop();
   pathFileNodes.push(target.split(DIRECTORY_SEPARATOR).pop());
-  const cssFilePath = pathFileNodes.join(DIRECTORY_SEPARATOR);
+  var cssFilePath = pathFileNodes.join(DIRECTORY_SEPARATOR);
   return cssFilePath;
 }
 
@@ -92,35 +92,35 @@ function isJoinExpression(path, t) {
 module.exports = function ({ Plugin, types: t}) {
 
   function importResolver(path, state) {
-    const file = state.file;
-    const fileOpts = file.opts;
-    const node = path.node;
-    const styles = path.scope.bindings.styles;
-    const extra = node.source.extra;
-    const specifiers = node.specifiers;
+    var file = state.file;
+    var fileOpts = file.opts;
+    var node = path.node;
+    var styles = path.scope.bindings.styles;
+    var extra = node.source.extra;
+    var specifiers = node.specifiers;
     // style file name
-    const targetFileName = node.source.value;
+    var targetFileName = node.source.value;
     // path from root to importer the file name, e.g. (src/component.js)
-    const sourceFileName = [process.cwd(), fileOpts.filename].join(DIRECTORY_SEPARATOR);
-    const cssFilePath = getCssFilePath(sourceFileName, targetFileName);
-    const extensions = (path.opts.extensions || ['css', 'scss', 'sass']).map(function(ext) {
+    var sourceFileName = [process.cwd(), fileOpts.filename].join(DIRECTORY_SEPARATOR);
+    var cssFilePath = getCssFilePath(sourceFileName, targetFileName);
+    var extensions = (path.opts.extensions || ['css', 'scss', 'sass']).map(function(ext) {
       return ext.toLowerCase();
     });
-    const prefixExtension = path.opts.prefixExtension || NATIVE_PREFIX_EXTENSION;
+    var prefixExtension = path.opts.prefixExtension || NATIVE_PREFIX_EXTENSION;
 
     if (!node || !isValidSourceFile(targetFileName, extensions) || types.isIdentifier(node)) return;
 
-    const source = parsePath(
+    var source = parsePath(
       cssFilePath,
       prefixExtension,
       extensions
     );
-    const data = importContent(source);
-    const { compiled: stylesAsObject } = data;
+    var data = importContent(source);
+    var { compiled: stylesAsObject } = data;
     if (styles && !Object.keys(data.importedVariables).includes(sourceFileName)) {
       data.importedVariables[sourceFileName] = styles.identifier.name;
     }
-    const templateLiteral = [
+    var templateLiteral = [
       'var',
       data.importedVariables[sourceFileName],
       '=',
@@ -174,9 +174,9 @@ module.exports = function ({ Plugin, types: t}) {
             } else if (classes.length === 1) {
               style.node.value = t.JSXExpressionContainer(classes[0]);
             } else {
-              const arrayExpression = t.ArrayExpression(classes);
-              const memberMergeExpression = t.memberExpression(arrayExpression, t.identifier('$merge'))
-              const callExpressionMergeAll = t.callExpression(memberMergeExpression, []);
+              var arrayExpression = t.ArrayExpression(classes);
+              var memberMergeExpression = t.memberExpression(arrayExpression, t.identifier('$merge'))
+              var callExpressionMergeAll = t.callExpression(memberMergeExpression, []);
               style.node.value = t.JSXExpressionContainer(callExpressionMergeAll);
             }
             css = null;
