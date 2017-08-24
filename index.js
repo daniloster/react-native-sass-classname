@@ -73,12 +73,12 @@ function parsePath(filePath, nativeExtensionPrefix, extensions) {
  * @param {string} source - relative path to importer file name, e.g. (../src/component.js)
  * @param {string} target - style file name
  */
-function getCssFilePath(source, target) {
+function getStyleSheetFullFilePath(source, target) {
   var pathFileNodes = source.split(DIRECTORY_SEPARATOR);
   pathFileNodes.pop();
   pathFileNodes.push(target.split(DIRECTORY_SEPARATOR).pop());
-  var cssFilePath = pathFileNodes.join(DIRECTORY_SEPARATOR);
-  return cssFilePath;
+  var fullFilePath = pathFileNodes.join(DIRECTORY_SEPARATOR);
+  return fullFilePath;
 }
 
 function isJoinExpression(path, t) {
@@ -89,40 +89,55 @@ function isJoinExpression(path, t) {
   && t.isArrayExpression(path.node.value.expression.callee.object)
 }
 
+function getAllowedExtensions(pathObject) {
+  return (pathObject.opts.extensions || ['css', 'scss', 'sass']).map(function(ext) {
+    return ext.toLowerCase();
+  });
+}
+
+function getPrefixExtension(pathObject) {
+  return pathObject.opts.prefixExtension || NATIVE_PREFIX_EXTENSION;
+}
+
 module.exports = function ({ Plugin, types: t}) {
 
   function importResolver(path, state) {
     var file = state.file;
     var fileOpts = file.opts;
     var node = path.node;
-    var styles = path.scope.bindings.styles;
+    var styles = node.specifiers && node.specifiers.length && node.specifiers[0].local && node.specifiers[0].local.name;
     var extra = node.source.extra;
     var specifiers = node.specifiers;
+
+    if (!styles) {
+      return;
+    }
     // style file name
     var targetFileName = node.source.value;
     // path from root to importer the file name, e.g. (src/component.js)
-    var sourceFileName = [process.cwd(), fileOpts.filename].join(DIRECTORY_SEPARATOR);
-    var cssFilePath = getCssFilePath(sourceFileName, targetFileName);
-    var extensions = (path.opts.extensions || ['css', 'scss', 'sass']).map(function(ext) {
-      return ext.toLowerCase();
-    });
-    var prefixExtension = path.opts.prefixExtension || NATIVE_PREFIX_EXTENSION;
+    isAbsolutePath = /^((\w[:](\/)+)|\/)/.test(fileOpts.filename);
+    prefixAbsolutePath = (isAbsolutePath ? [] : [process.cwd()]);
+    var sourceFileName =  prefixAbsolutePath.concat(fileOpts.filename).join(DIRECTORY_SEPARATOR);
+    var styleSheetFullFilePath = getStyleSheetFullFilePath(sourceFileName, targetFileName);
+    var extensions = getAllowedExtensions(path);
+    var prefixExtension = getPrefixExtension(path);
 
     if (!node || !isValidSourceFile(targetFileName, extensions) || types.isIdentifier(node)) return;
 
     var source = parsePath(
-      cssFilePath,
+      styleSheetFullFilePath,
       prefixExtension,
       extensions
     );
     var data = importContent(source);
     var { compiled: stylesAsObject } = data;
-    if (styles && !Object.keys(data.importedVariables).includes(sourceFileName)) {
-      data.importedVariables[sourceFileName] = styles.identifier.name;
+    var hashImportedVariables = [sourceFileName, styleSheetFullFilePath].join('|');
+    if (!Object.keys(data.importedVariables).includes(hashImportedVariables)) {
+      data.importedVariables[hashImportedVariables] = styles;
     }
     var templateLiteral = [
       'var',
-      data.importedVariables[sourceFileName],
+      data.importedVariables[hashImportedVariables],
       '=',
       JSON.stringify(stylesAsObject),
       ';',
@@ -144,17 +159,11 @@ module.exports = function ({ Plugin, types: t}) {
           if (css != null) {
             var classes = [];
             if (t.isJSXExpressionContainer(css.node.value)) {
-              if (css.node.value.expression && css.node.value.expression.elements) {
-                console.log('ELEMENTS', css.node.value.expression.elements)
-              }
               if (t.isArrayExpression(css.node.value.expression)) {
-                console.log('ARRAY EXPRESSION', css.node.value.expression.elements);
                 classes = classes.concat(css.node.value.expression.elements);
               } else if (isJoinExpression(css, t)) {
-                  console.log('JOIN EXPRESSION', css.node.value.expression);
                   classes = classes.concat(css.node.value.expression.callee.object.elements);
               } else {
-                console.log('ELSE EXPRESSION', css.node.value.expression);
                 classes.push(css.node.value.expression);
               }
             }
@@ -172,7 +181,14 @@ module.exports = function ({ Plugin, types: t}) {
             if (classes.length === 0) {
               style.remove();
             } else if (classes.length === 1) {
-              style.node.value = t.JSXExpressionContainer(classes[0]);
+              if (style === css) {
+                var classExpression = classes[0];
+                var hasTheJSXExpressionContainerAssigned = style.node.value && style.node.value.type === 'JSXExpressionContainer'
+                  && style.node.value.expression === classExpression;
+                if (!hasTheJSXExpressionContainerAssigned) {
+                  style.node.value = t.JSXExpressionContainer(classExpression);
+                }
+              }
             } else {
               var arrayExpression = t.ArrayExpression(classes);
               var memberMergeExpression = t.memberExpression(arrayExpression, t.identifier('$merge'))
