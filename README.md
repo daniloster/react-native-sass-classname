@@ -23,7 +23,7 @@ Then, have your .babelrc ready with the plugin set:
     "react-native"
   ],
   "plugins": [
-    ["react-native-sass", {
+    ["react-native-sass-classname", {
       "extension": ["css", "scss", "sass"],
       "prefixExtension": "native"
     }]
