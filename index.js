@@ -90,13 +90,13 @@ function isJoinExpression(path, t) {
 }
 
 function getAllowedExtensions(pathObject) {
-  return (pathObject.opts.extensions || ['css', 'scss', 'sass']).map(function(ext) {
+  return ((pathObject.opts || {}).extensions || ['css', 'scss', 'sass']).map(function(ext) {
     return ext.toLowerCase();
   });
 }
 
 function getPrefixExtension(pathObject) {
-  return pathObject.opts.prefixExtension || NATIVE_PREFIX_EXTENSION;
+  return (pathObject.opts || {}).prefixExtension || NATIVE_PREFIX_EXTENSION;
 }
 
 module.exports = function ({ Plugin, types: t}) {
