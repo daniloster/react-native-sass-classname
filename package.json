@@ -1,6 +1,6 @@
 {
   "name": "babel-plugin-react-native-sass-classname",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Babel plugin to make react web app more reusable as react-native apps taking the scss file with pre-extesions",
   "main": "index.js",
   "peerDependencies": {
